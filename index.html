@@ -1,1 +1,77 @@
-fdsafd
+<html>
+    <head>
+        <script>
+            var Class = function(parent){
+                var klass = function(){
+                    this.init.apply(this, arguments);
+                };
+
+                //klass의 프로토 타입으로 바꾼다.
+                if(parent){
+                    var subclass = function(){}
+                    subclass.prototype = parent.prototype;
+                    klass.prototype = new subclass;
+                }
+
+                klass.prototype.init = function(){};
+
+    
+                klass.fn = klass.prototype; //프로토타입의 단축형
+                klass.fn.parent = klass;//클래스의 단축형
+                klass._super = klass.__proto__;
+
+                //프록시 추가
+                klass.proxy = function(func){
+                    var self = this;
+                    return (function(){
+                        return func.apply(self, arguments);
+                    });
+                }
+
+                klass.fn.proxy = klass.proxy;
+
+                //클래스 프로퍼티 추가
+                klass.extend = function(obj){
+                    var extended = obj.extended;
+                    for(var i in obj){
+                        klass[i] = obj[i];
+                    }
+
+                    if(extended) extended(klass);
+                }
+
+                //인스턴스 프로퍼티 추가
+                klass.include = function(obj){
+                    var included = obj.included;
+                    for(var i in obj){
+                        klass.fn[i] = obj[i];
+                    }
+                    if(included) included(klass);
+                }
+                return klass;
+            } 
+
+            var Person = new Class;
+            Person.extend({
+                 find : function(id){ console.log(id); }
+                ,exists : function(id){}
+                ,extended: function(klass){ console.log(klass, "가 확장됐다!!"); }
+            });
+
+            var person = Person.find("my id is test");
+
+
+            var Person2 = new Class;
+            Person2.include({
+                 save : function(id){console.log(id)}
+                ,destroy : function(id){console.log(id)}
+
+            });
+
+            var psrson2 = new Person2;
+            psrson2.save("2121");
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
